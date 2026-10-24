@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2><i class="bi bi-person-badge"></i> Жүргізушілер</h2>
+  {% if current_user.is_admin %}
+  <a href="{{ url_for('drivers.create_driver') }}" class="btn btn-warning">
+    <i class="bi bi-plus-lg"></i> Жаңа жүргізуші
+  </a>
+  {% endif %}
+</div>
+
+<div class="filter-bar">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label small">Іздеу</label>
+      <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Аты, телефон, нөмір…">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small">Статус</label>
+      <select name="status" class="form-select form-select-sm">
+        <option value="">Барлығы</option>
+        <option value="available" {% if status == 'available' %}selected{% endif %}>Бос</option>
+        <option value="busy" {% if status == 'busy' %}selected{% endif %}>Бос емес</option>
+        <option value="offline" {% if status == 'offline' %}selected{% endif %}>Оффлайн</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Іздеу</button>
+    </div>
+  </form>
+</div>
+
+{% if drivers %}
+<div class="row g-3">
+  {% for d in drivers %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex gap-3">
+        {% if d.photo %}
+        <img src="{{ url_for('static', filename='uploads/' + d.photo) }}" alt="" class="driver-photo-sm">
+        {% else %}
+        <div class="driver-photo-sm bg-secondary d-flex align-items-center justify-content-center text-white">
+          <i class="bi bi-person"></i>
+        </div>
+        {% endif %}
+        <div class="flex-grow-1">
+          <h6 class="mb-1">
+            <a href="{{ url_for('drivers.detail_driver', id=d.id) }}" class="text-decoration-none">{{ d.full_name }}</a>
+          </h6>
+          <small class="text-muted d-block">{{ d.car_model }} · {{ d.car_plate }}</small>
+          <span class="badge {% if d.status == 'available' %}bg-success{% elif d.status == 'busy' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+            {{ d.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if pagination.pages > 1 %}
+<nav class="mt-4">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('drivers.list_drivers', page=pagination.prev_num, q=q, status=status) }}">«</a>
+    </li>
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+      {% if p %}
+      <li class="page-item {% if p == pagination.page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('drivers.list_drivers', page=p, q=q, status=status) }}">{{ p }}</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('drivers.list_drivers', page=pagination.next_num, q=q, status=status) }}">»</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+{% else %}
+<div class="alert alert-info">Жүргізуші табылмады.</div>
+{% endif %}
+{% endblock %}

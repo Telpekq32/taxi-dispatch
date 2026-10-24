@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Тапсырыс #{{ ride.id }}</h2>
+  <div>
+    {% if current_user.is_admin %}
+    <a href="{{ url_for('rides.edit_ride', id=ride.id) }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-pencil"></i> Өңдеу
+    </a>
+    <form action="{{ url_for('rides.delete_ride', id=ride.id) }}" method="post" class="d-inline" onsubmit="return confirm('Жойылсын ба?')">
+      <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+    </form>
+    {% endif %}
+    <a href="{{ url_for('rides.list_rides') }}" class="btn btn-outline-primary btn-sm">← Артқа</a>
+  </div>
+</div>
+
+{# ===== Статус жолағы (прогресс) ===== #}
+{% set steps = [
+  ('requested', '1. Сұралған'),
+  ('assigned', '2. Жүргізуші тағайындалған'),
+  ('in_progress', '3. Жолда'),
+  ('done', '4. Аяқталған')
+] %}
+{% set order = ['requested', 'assigned', 'in_progress', 'done'] %}
+{% set current_idx = order.index(ride.status) if ride.status in order else -1 %}
+
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+      {% for key, label in steps %}
+        {% set idx = loop.index0 %}
+        <div class="text-center flex-fill">
+          <span class="badge rounded-pill fs-6 px-3 py-2
+            {% if ride.status == 'cancelled' %}bg-secondary
+            {% elif idx < current_idx %}bg-success
+            {% elif idx == current_idx %}bg-warning text-dark
+            {% else %}bg-light text-muted border{% endif %}">
+            {{ label }}
+          </span>
+        </div>
+        {% if not loop.last %}
+        <div class="text-muted d-none d-md-block">→</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% if ride.status == 'cancelled' %}
+    <div class="alert alert-danger mt-3 mb-0 py-2">Тапсырыс <strong>болдырылмаған</strong>.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="mb-3">Маршрут</h5>
+        <p class="mb-1"><i class="bi bi-geo-alt-fill text-success"></i> <strong>Қайдан:</strong> {{ ride.pickup_address }}</p>
+        <p class="mb-3"><i class="bi bi-geo-alt-fill text-danger"></i> <strong>Қайда:</strong> {{ ride.dropoff_address }}</p>
+        <p class="mb-1"><strong>Күні:</strong> {{ ride.ride_date.strftime('%d.%m.%Y %H:%M') if ride.ride_date else '—' }}</p>
+        <p class="mb-1"><strong>Баға:</strong> {{ "%.0f"|format(ride.fare) }} ₸</p>
+        {% if ride.notes %}<p class="mb-0"><strong>Ескертпе:</strong> {{ ride.notes }}</p>{% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Клиент</div>
+      <div class="card-body">
+        {% if ride.customer %}
+        <p class="mb-1 fw-semibold">{{ ride.customer.full_name }}</p>
+        <p class="mb-0 text-muted"><i class="bi bi-telephone"></i> {{ ride.customer.phone }}</p>
+        {% else %}—{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card mb-3">
+      <div class="card-header">Жүргізуші</div>
+      <div class="card-body">
+        {% if ride.driver %}
+        <p class="mb-1 fw-semibold">{{ ride.driver.full_name }}</p>
+        <p class="mb-1 text-muted">{{ ride.driver.car_model }} · {{ ride.driver.car_plate }}</p>
+        <p class="mb-0 text-muted"><i class="bi bi-telephone"></i> {{ ride.driver.phone }}</p>
+        {% else %}
+        <p class="text-muted mb-0">Әлі тағайындалмаған</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if current_user.is_admin and ride.status != 'done' and ride.status != 'cancelled' %}
+    <div class="card border-warning">
+      <div class="card-header bg-warning-subtle">
+        <strong><i class="bi bi-person-gear"></i> Админ: келесі қадам</strong>
+      </div>
+      <div class="card-body">
+
+        {% if ride.status == 'requested' or (ride.status == 'assigned' and not ride.driver_id) %}
+        <p class="small text-muted mb-2">Бос жүргізушіні таңдап, тағайындаңыз:</p>
+        <form action="{{ url_for('rides.assign_driver_form', id=ride.id) }}" method="post" class="mb-3">
+          <div class="input-group">
+            <select name="driver_id" class="form-select" required>
+              <option value="">— Жүргізуші —</option>
+              {% for d in available_drivers %}
+              <option value="{{ d.id }}">{{ d.full_name }} ({{ d.car_plate }}) — {{ d.status }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-warning">Тағайындау</button>
+          </div>
+        </form>
+        {% if not available_drivers %}
+        <div class="alert alert-info py-2 small mb-0">Қазір бос жүргізуші жоқ. <a href="{{ url_for('drivers.list_drivers') }}">Жүргізушілер</a></div>
+        {% endif %}
+        {% endif %}
+
+        {% if ride.status == 'assigned' and ride.driver_id %}
+        <p class="small text-muted">Жүргізуші тағайындалды. Клиент күтіп тұр.</p>
+        <form action="{{ url_for('rides.change_status', id=ride.id, status='in_progress') }}" method="post" class="d-grid mb-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-play-fill"></i> Сапарды бастау (Жолда)
+          </button>
+        </form>
+        {% endif %}
+
+        {% if ride.status == 'in_progress' %}
+        <p class="small text-muted">Жүргізуші жолда. Сапар аяқталғанда:</p>
+        <form action="{{ url_for('rides.change_status', id=ride.id, status='done') }}" method="post" class="d-grid mb-2">
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-lg"></i> Сапар аяқталды
+          </button>
+        </form>
+        {% endif %}
+
+        <hr>
+        <form action="{{ url_for('rides.change_status', id=ride.id, status='cancelled') }}" method="post"
+              onsubmit="return confirm('Тапсырысты болдыру керек пе?')">
+          <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+            <i class="bi bi-x-circle"></i> Болдырмау
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not current_user.is_admin %}
+    <div class="card border-info">
+      <div class="card-header bg-info-subtle">
+        <strong><i class="bi bi-info-circle"></i> Сіздің тапсырысыңыз</strong>
+      </div>
+      <div class="card-body small">
+        {% if ride.status == 'requested' %}
+        <p class="mb-0">Тапсырыс қабылданды. Админ жүргізуші тағайындайды — күтіңіз.</p>
+        {% elif ride.status == 'assigned' %}
+        <p class="mb-1">Жүргізуші тағайындалды:</p>
+        <p class="fw-semibold mb-0">{{ ride.driver.full_name if ride.driver else '—' }}
+          {% if ride.driver %} · {{ ride.driver.car_plate }} · {{ ride.driver.phone }}{% endif %}
+        </p>
+        <p class="text-muted mt-2 mb-0">Жақында сізге келеді.</p>
+        {% elif ride.status == 'in_progress' %}
+        <p class="mb-0">Сапар жүріп жатыр. Жүргізуші сізбен бірге жолда.</p>
+        {% elif ride.status == 'done' %}
+        <p class="mb-0 text-success">Сапар сәтті аяқталды. Рахмет!</p>
+        {% elif ride.status == 'cancelled' %}
+        <p class="mb-0 text-danger">Тапсырыс болдырылды.</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 class="display-1 text-muted">404</h1>
+  <h3>Бет табылмады</h3>
+  <p class="text-muted">Сіз іздеген бет жоқ немесе жылжытылған.</p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-warning">Басты бетке</a>
+</div>
+{% endblock %}

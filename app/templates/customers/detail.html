@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>{{ customer.full_name }}</h2>
+  <div>
+    <a href="{{ url_for('customers.edit_customer', id=customer.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Өңдеу</a>
+    {% if current_user.is_admin %}
+    <form action="{{ url_for('customers.delete_customer', id=customer.id) }}" method="post" class="d-inline" onsubmit="return confirm('Жойылсын ба?')">
+      <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+    </form>
+    {% endif %}
+    <a href="{{ url_for('customers.list_customers') if current_user.is_admin else url_for('main.dashboard') }}" class="btn btn-outline-primary btn-sm">← Артқа</a>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <p><strong>Телефон:</strong> {{ customer.phone }}</p>
+    <p><strong>Мекенжай:</strong> {{ customer.address or '—' }}</p>
+    <p class="text-muted small">Қосылған: {{ customer.created_at.strftime('%d.%m.%Y') if customer.created_at else '—' }}</p>
+  </div>
+</div>
+
+{% if recent_rides %}
+<h4 class="mb-3">Соңғы тапсырыстар</h4>
+<div class="table-responsive">
+  <table class="table table-sm table-hover bg-white">
+    <thead>
+      <tr><th>#</th><th>Маршрут</th><th>Статус</th><th>Күні</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for r in recent_rides %}
+      <tr>
+        <td>{{ r.id }}</td>
+        <td><small>{{ r.pickup_address[:25] }}… → {{ r.dropoff_address[:25] }}…</small></td>
+        <td><span class="badge badge-status-{{ r.status }}">{{ r.status }}</span></td>
+        <td>{{ r.ride_date.strftime('%d.%m.%Y') if r.ride_date else '—' }}</td>
+        <td><a href="{{ url_for('rides.detail_ride', id=r.id) }}">Көру</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

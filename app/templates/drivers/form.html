@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <h3 class="mb-4">{{ title }}</h3>
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.full_name.label(class="form-label") }}
+            {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+            {% for e in form.full_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.phone.label(class="form-label") }}
+              {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+              {% for e in form.phone.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.license_number.label(class="form-label") }}
+              {{ form.license_number(class="form-control" + (" is-invalid" if form.license_number.errors else "")) }}
+              {% for e in form.license_number.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.car_model.label(class="form-label") }}
+              {{ form.car_model(class="form-control" + (" is-invalid" if form.car_model.errors else "")) }}
+              {% for e in form.car_model.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.car_plate.label(class="form-label") }}
+              {{ form.car_plate(class="form-control" + (" is-invalid" if form.car_plate.errors else "")) }}
+              {% for e in form.car_plate.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+            {% for e in form.status.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.photo.label(class="form-label") }}
+            {{ form.photo(class="form-control" + (" is-invalid" if form.photo.errors else "")) }}
+            {% for e in form.photo.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            {% if driver and driver.photo %}
+            <div class="mt-2">
+              <img src="{{ url_for('static', filename='uploads/' + driver.photo) }}" class="driver-photo-sm" alt="">
+              <small class="text-muted">Қазіргі фото</small>
+            </div>
+            {% endif %}
+          </div>
+          <div class="d-flex gap-2">
+            {{ form.submit(class="btn btn-warning") }}
+            <a href="{{ url_for('drivers.list_drivers') }}" class="btn btn-outline-secondary">Болдырмау</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

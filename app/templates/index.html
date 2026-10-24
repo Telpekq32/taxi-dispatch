@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row align-items-center mb-5">
+  <div class="col-lg-7">
+    <h1 class="display-5 fw-bold">Taxi Dispatch Mini</h1>
+    <p class="lead text-muted">
+      Такси тапсырыстарын басқарудың қарапайым және ыңғайлы жүйесі.
+      Клиенттер тапсырыс береді, админ жүргізуші тағайындайды, статустар бақыланады.
+    </p>
+    {% if not current_user.is_authenticated %}
+    <a href="{{ url_for('auth.register') }}" class="btn btn-warning btn-lg me-2">
+      <i class="bi bi-person-plus"></i> Тіркелу
+    </a>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-dark btn-lg">
+      <i class="bi bi-box-arrow-in-right"></i> Кіру
+    </a>
+    {% else %}
+    <a href="{{ url_for('rides.create_ride') }}" class="btn btn-warning btn-lg me-2">
+      <i class="bi bi-plus-circle"></i> Жаңа тапсырыс
+    </a>
+    <a href="{{ url_for('rides.list_rides') }}" class="btn btn-outline-dark btn-lg">
+      Тапсырыстар тізімі
+    </a>
+    {% endif %}
+  </div>
+  <div class="col-lg-5 text-center d-none d-lg-block">
+    <i class="bi bi-taxi-front-fill text-warning" style="font-size: 10rem; opacity: 0.85;"></i>
+  </div>
+</div>
+
+{% if stats %}
+<h4 class="mb-3">Жылдам статистика</h4>
+<div class="row g-3 mb-4">
+  <div class="col-md-4 col-lg-2">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-3 fw-bold text-primary">{{ stats.rides_total }}</div>
+      <small class="text-muted">Барлық тапсырыс</small>
+    </div>
+  </div>
+  <div class="col-md-4 col-lg-2">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-3 fw-bold text-secondary">{{ stats.rides_requested }}</div>
+      <small class="text-muted">Күтуде</small>
+    </div>
+  </div>
+  <div class="col-md-4 col-lg-2">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-3 fw-bold text-success">{{ stats.rides_done }}</div>
+      <small class="text-muted">Аяқталған</small>
+    </div>
+  </div>
+  <div class="col-md-4 col-lg-2">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-3 fw-bold text-info">{{ stats.drivers }}</div>
+      <small class="text-muted">Жүргізуші</small>
+    </div>
+  </div>
+  <div class="col-md-4 col-lg-2">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-3 fw-bold text-warning">{{ stats.available_drivers }}</div>
+      <small class="text-muted">Бос жүргізуші</small>
+    </div>
+  </div>
+  <div class="col-md-4 col-lg-2">
+    <div class="card stat-card text-center p-3">
+      <div class="fs-3 fw-bold">{{ stats.customers }}</div>
+      <small class="text-muted">Клиент</small>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-1-circle text-warning"></i> Тапсырыс беру</h5>
+        <p class="card-text text-muted">Клиент мекенжайды енгізіп, тапсырыс жібереді. Статус: <strong>requested</strong>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-2-circle text-warning"></i> Жүргізуші тағайындау</h5>
+        <p class="card-text text-muted">Админ бос жүргізушіні таңдайды. Статус: <strong>assigned → in_progress → done</strong>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-3-circle text-warning"></i> Бақылау және API</h5>
+        <p class="card-text text-muted">Сүзгі, іздеу, пагинация және REST API арқылы деректерді алу.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

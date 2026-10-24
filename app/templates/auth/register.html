@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body p-4">
+        <h3 class="mb-4 text-center"><i class="bi bi-person-plus"></i> Тіркелу</h3>
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.username.label(class="form-label") }}
+              {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+              {% for e in form.username.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.email.label(class="form-label") }}
+              {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+              {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            {{ form.full_name.label(class="form-label") }}
+            {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+            {% for e in form.full_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.phone.label(class="form-label") }}
+            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="+7 700 123 45 67") }}
+            {% for e in form.phone.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.password.label(class="form-label") }}
+              {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+              {% for e in form.password.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.password2.label(class="form-label") }}
+              {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else "")) }}
+              {% for e in form.password2.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+          {{ form.submit(class="btn btn-warning w-100") }}
+        </form>
+        <p class="mt-3 text-center text-muted">
+          Аккаунтыңыз бар ма? <a href="{{ url_for('auth.login') }}">Кіріңіз</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
