@@ -1,6 +1,9 @@
 [build]
   publish = "app/static"
 
+[build.environment]
+  PYTHON_VERSION = "3.12"
+
 [[redirects]]
   from = "/*"
   to = "https://taxi-dispatch-flask.onrender.com/:splat"
